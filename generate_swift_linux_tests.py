@@ -19,19 +19,23 @@ def get_test_files(in_path):
 def get_test_classes(in_string):
     return _test_class_re.findall(in_string)
 
-def get_end_index(in_string, class_start_index, open = "{", close = "}"):
+def get_end_index(in_string, class_start_index, open = "{", close = "}", or_close = None):
     count = 0
     length = len(in_string)
     index = class_start_index
-    max_length = len(open) if len(open) > len(close) else len(close)
+    if or_close is None:
+      or_close = close
+    max_length = max(len(open), len(close), len(or_close))
     while index < length:
         char = in_string[index:index+max_length+1]
         if char.startswith(open):
             count += 1
-        elif char.startswith(close):
+        elif char.startswith(close) and close != or_close:
+            count -= 1
+        elif char.startswith(or_close):
             count -= 1
             if count <= 0:
-                return index+len(close)
+                return index+len(or_close)
         index += 1
     return index
 
@@ -72,12 +76,39 @@ def add_linux_allMethods(in_string, classes):
         res += "\t\t]\n\t}\n}\n#endif"
     return in_string+res
 
+def cleanup_ifdefs(in_string):
+  if_re = re.compile("#if\s+(.+?)\n")
+  Linux = True
+  OSX = FreeBSD = iOS = tvOS = watchOS = False
+  arm = arm64 = i386 = False
+  x86_64 = True
+  arch = os = lambda o: o
+  DEBUG = False
+
+  new_str = in_string
+
+  for match in if_re.finditer(in_string):
+    result = eval(match.group(1).replace("!", "not ").replace("||", "or").replace("&&", "and"))
+    pos_endif = get_end_index(new_str, match.start()-1, "#if", "#endif")
+    pos_else = get_end_index(new_str, match.start()-1, "#if", "#endif", "#else")
+    if result:
+      if pos_else < pos_endif:
+        in_string = in_string[:pos_else-len("#else")] + "#endif\n" + in_string[pos_endif:]
+    else:
+      if pos_else < pos_endif:
+        in_string = in_string[:match.start()] + "#if True\n" + in_string[pos_else:]
+      else:
+        in_string = in_string[:match.start()] + in_string[pos_endif:]
+  return in_string
+
+
 def process_test_file(file_path):
     res = open(file_path, "rt").read().decode("utf8")
+    cleaned = cleanup_ifdefs(res)
     classes = {}
-    class_list = get_test_classes(res)
+    class_list = get_test_classes(cleaned)
     for cls in class_list:
-        classes[cls] = get_test_methods(res, cls)
+        classes[cls] = get_test_methods(cleaned, cls)
         res = remove_linux_allMethods(res, cls)
     res = add_linux_allMethods(res, classes)
     open(file_path, "wt").write(res.encode("utf8"))
@@ -98,16 +129,16 @@ def process_linux_main(proj_path, files_info):
 
 
 if __name__ == "__main__":
-    
+
     files = get_test_files(path.join(sys.argv[1], "Tests"))
     test_names = map(lambda file: process_test_file(file), files)
-    
+
     def red_func(d, v):
         if d.get(v[0]) is None:
             d[v[0]] = []
         d[v[0]].append((v[1], v[2]))
         return d
-    
+
     test_names = reduce(red_func, test_names, {})
     process_linux_main(sys.argv[1], test_names)
     print "OK"
