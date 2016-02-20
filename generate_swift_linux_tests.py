@@ -56,13 +56,17 @@ def get_test_methods(in_string, for_class):
     return methods
 
 def remove_linux_allMethods(in_string, for_class):
-    if_re = "#if\s+os\s*\(\s*Linux\s*\)\s+"
+    if_re = re.compile("#if\s+os\s*\(\s*Linux\s*\)\s+")
     allm_re = re.compile("extension\s+"+ for_class + "\s*:\s*XCTestCaseProvider\s*\{")
-    for match in re.finditer(if_re, in_string):
+    match = if_re.search(in_string)
+    while match is not None:
+        index = match.end()
         end_pos = get_end_index(in_string, match.start()-1, "#if", "#endif")
         res = in_string[match.start():end_pos]
         if allm_re.search(res) is not None:
             in_string = in_string[:match.start()] + in_string[end_pos:]
+            index = match.start()
+        match = if_re.search(in_string, index)
     return in_string.rstrip(" \n\t\r")
 
 def add_linux_allMethods(in_string, classes):
@@ -85,20 +89,25 @@ def cleanup_ifdefs(in_string):
   arch = os = lambda o: o
   DEBUG = False
 
-  new_str = in_string
+  match = if_re.search(in_string)
 
-  for match in if_re.finditer(in_string):
+  while match is not None:
+    index = match.end()
     result = eval(match.group(1).replace("!", "not ").replace("||", "or").replace("&&", "and"))
-    pos_endif = get_end_index(new_str, match.start()-1, "#if", "#endif")
-    pos_else = get_end_index(new_str, match.start()-1, "#if", "#endif", "#else")
+    pos_endif = get_end_index(in_string, match.start()-1, "#if", "#endif")
+    pos_else = get_end_index(in_string, match.start()-1, "#if", "#endif", "#else")
     if result:
       if pos_else < pos_endif:
         in_string = in_string[:pos_else-len("#else")] + "#endif\n" + in_string[pos_endif:]
+        index = pos_else
     else:
       if pos_else < pos_endif:
         in_string = in_string[:match.start()] + "#if True\n" + in_string[pos_else:]
+        index = match.start()
       else:
         in_string = in_string[:match.start()] + in_string[pos_endif:]
+        index = match.start()
+    match = if_re.search(in_string, index)
   return in_string
 
 
