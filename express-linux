@@ -9,7 +9,6 @@ import getopt
 def command(description="", arguments_count=1):
   def decorator(method):
     arg_s = inspect.getargspec(method)
-    print arg_s
     arg_l = arg_s.args[1:arguments_count+1]
     all_args = arg_s.args[1:]
     opts = filter(lambda arg: arg not in arg_l, all_args)
@@ -83,7 +82,6 @@ class Commandant(object):
       else:
         opts.append((opt["name"], popts.get("--"+opt["name"], opt["default"])))
     params = dict(args+opts)
-    print params
     cmd(**params)
 
 
