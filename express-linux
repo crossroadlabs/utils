@@ -135,7 +135,7 @@ class CLITool(Commandant):
   @command("build dependencies", 0)
   def build_deps(self, path="."):
     run_command("/usr/bin/env", ["swift", "build", "--fetch"], cwd=os.path.abspath(path))
-    run_command("rm -rf Packages/*/Tests", cwd=path, shell=True)
+    run_command("rm -rf Packages/*/Tests", cwd=os.path.abspath(path), shell=True)
 
 
 #===================
