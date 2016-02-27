@@ -14,8 +14,8 @@ def command(description="", arguments_count=1):
     opts = filter(lambda arg: arg not in arg_l, all_args)
     args = filter(lambda arg: arg not in opts, all_args)
 
-    opts = map(lambda o: { "name": o, "default": arg_s.defaults[all_args.index(o)-len(args)] } , opts)
-
+    opts = map(lambda o: { "name": o, "default": arg_s.defaults[all_args.index(o)-len(all_args)] } , opts)
+    
     def parse_opts_and_args(args):
       gopts = []
       for opt in opts:
@@ -56,11 +56,17 @@ class Commandant(object):
     if command == "":
       print "============================\n", "Help", "\n", "============================\n"
       for cmd in self.__commands:
-        print "\t", cmd, "\t\t\t", getattr(getattr(self, cmd), "__descr")
+        print "\t", cmd.replace("_", "-"), "\t\t\t", getattr(getattr(self, cmd), "__descr")
     else:
       print "============================\n","Help for", command, "\n", "============================\n"
-      print inspect.getdoc(getattr(self, command, None))
+      doc = inspect.getdoc(getattr(self, command, None))
+      if doc is None:
+        doc = getattr(getattr(self, command), "__descr")
+      print doc
       print ""
+      print "\tArguments:", ", ".join(getattr(getattr(self, command), "__args")), "\n"
+      for opt in getattr(getattr(self, command), "__opts"):
+        print "\tOption: ", "--"+opt["name"]+",", "default:", opt["default"] 
 
   def run_command_with_args(self, command, args):
     if command is None:
@@ -100,13 +106,11 @@ class CLITool(Commandant):
       run_command("/usr/bin/env", ["swift", "build", "-c", configuration])
 
   @command("run project")
-  def run(self, configuration="debug", dispatch=False, path="."):
-    name = self.__get_product_name(path)
-    self.build(configuration, dispatch, path)
+  def run(self, configuration="debug", path="."):
     path = os.path.abspath(path)
-    run_command(path+"/.build/"+configuration+"/"+name, cwd=path)
+    run_command(path+"/.build/"+configuration+"/app", cwd=path)
 
-  @command("remove builds or builds and packages")
+  @command("remove builds or packages", 0)
   def clean(self, full=False, path="."):
     path = os.path.abspath(path)
     if full:
@@ -122,16 +126,14 @@ class CLITool(Commandant):
     pname = self.__get_product_name(path)
     with open(path+"/Package.swift", "r+") as f:
       data = f.read().decode("utf8")
-      print data
       data = data.replace('"'+pname+'"', '"'+name+'"')
-      print data
       f.seek(0)
       f.truncate(0)
       f.write(data.encode("utf8"))
-    print "Inited", name, "successfully."
+    print "Inititialized", name, "successfully."
 
-  @command("build dependencies")
-  def build_dependencies(self, path="."):
+  @command("build dependencies", 0)
+  def build_deps(self, path="."):
     run_command("/usr/bin/env", ["swift", "build", "--fetch"], cwd=os.path.abspath(path))
     run_command("rm -rf Packages/*/Tests", cwd=path, shell=True)
 
