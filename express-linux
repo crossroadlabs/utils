@@ -103,7 +103,7 @@ class CLITool(Commandant):
     if dispatch:
       run_command("/usr/bin/env", ["swift", "build", "-c", configuration, "-Xcc", "-fblocks", "-Xswiftc", "-Ddispatch"], cwd=path)
     else:
-      run_command("/usr/bin/env", ["swift", "build", "-c", configuration])
+      run_command("/usr/bin/env", ["swift", "build", "-c", configuration], cwd=path)
 
   @command("run project")
   def run(self, configuration="debug", path="."):
