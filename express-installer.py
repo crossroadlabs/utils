@@ -118,8 +118,8 @@ def install_packages():
 	print "Installing Ubuntu packages by apt-get. You must provide your sudo password"
 	ur = get_ubuntu_release()
 	if ur < 15:
-		run_command("sudo add-apt-repository ppa:swiftexpress/swiftexpress", shell=True)
-	run_command("sudo apt-get update && sudo apt-get install "
+		run_command("sudo add-apt-repository --yes ppa:swiftexpress/swiftexpress", shell=True)
+	run_command("sudo apt-get update && sudo apt-get install --yes "
 		"clang binutils libicu-dev libevhtp-dev libevent-dev libssl-dev git", shell=True)
 
 def download_swift_express():
