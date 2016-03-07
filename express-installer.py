@@ -44,7 +44,6 @@ def ask_bool_question(question):
 		except IOError: pass
 
 	fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
-	print ""
 	return response == "y"
 
 def read_path():
