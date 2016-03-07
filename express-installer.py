@@ -14,6 +14,7 @@ import fcntl
 
 _SWIFT_RELEASES = {
 	"fc261045a5": { "name": "DEV-02-25", "works": True },
+	"24a0c3de75": { "name": "DEV-03-01", "works": True },
 	"3.0-dev": { "name": "DEV_3.0-UNKNOWN", "works": None },
 	"2.2-dev": { "name": "DEV_2.2", "works": False }
 }
