@@ -200,7 +200,10 @@ if __name__ == "__main__":
 	for arg in sys.argv:
 		if arg == "--no-apt":
 			noapt = True
+	old_stdin = sys.stdin
+	sys.stdin = open("/dev/tty", "r")
 	try:
 		main(noapt)
 	except KeyboardInterrupt:
 		print "Installation failed"
+	sys.stdin = old_stdin
