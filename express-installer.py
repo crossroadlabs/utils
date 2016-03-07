@@ -58,7 +58,7 @@ def get_swift_release(swift_bin_path):
 		if release is not None:
 			print "Swift release is:", release["name"]
 			return release
-		m = re.search("version\s+([0-9a-z\.\-])+", result, re.I)
+		m = re.search("version\s+([0-9a-z\.\-]+)", result, re.I)
 		if m is not None:
 			release = _SWIFT_RELEASES.get(m.group(1))
 			if release is not None:
