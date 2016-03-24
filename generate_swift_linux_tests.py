@@ -57,7 +57,7 @@ def get_test_methods(in_string, for_class):
 
 def remove_linux_allMethods(in_string, for_class):
     if_re = re.compile("#if\s+os\s*\(\s*Linux\s*\)\s+")
-    allm_re = re.compile("extension\s+"+ for_class + "\s*:\s*XCTestCaseProvider\s*\{")
+    allm_re = re.compile("extension\s+"+ for_class + "\s*\{\s*static\s+var\s+allTests")
     match = if_re.search(in_string)
     while match is not None:
         index = match.end()
@@ -72,8 +72,8 @@ def remove_linux_allMethods(in_string, for_class):
 def add_linux_allMethods(in_string, classes):
     res = "\n\n#if os(Linux)\n"
     for cls, methods in classes.iteritems():
-        res += "extension "+cls+" : XCTestCaseProvider {\n" \
-            "\tvar allTests : [(String, () throws -> Void)] {\n" \
+        res += "extension "+cls+" {\n" \
+            "\tstatic var allTests : [(String, "+cls+" -> () throws -> Void)] {\n" \
             "\t\treturn [\n"
         for method in methods:
             res += "\t\t\t(\""+method+"\", "+method+"),\n"
@@ -86,6 +86,7 @@ def cleanup_ifdefs(in_string):
   OSX = FreeBSD = iOS = tvOS = watchOS = False
   arm = arm64 = i386 = False
   x86_64 = True
+  dispatch = False
   arch = os = lambda o: o
   DEBUG = False
 
@@ -127,12 +128,12 @@ def process_test_file(file_path):
 def process_linux_main(proj_path, files_info):
     res = "import XCTest\n\n"
     for pkg in files_info.keys():
-        res += "@testable import "+pkg+"test\n"
+        res += "@testable import "+pkg+"TestSuite\n"
     res += "\nXCTMain([\n"
     for pkg in files_info.values():
         for file, info in pkg:
             for cls in info:
-                res += "\t"+cls+"(),\n"
+                res += "\ttestCase("+cls+".allTests),\n"
     res += "])"
     open(path.join(path.join(proj_path, "Tests"), "LinuxMain.swift"), "wt").write(res)
 
