@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" == "clean" ]; then
-        rm -rf Packages .build
+	rm -rf Packages .build
 	exit
 fi
 
@@ -10,8 +10,11 @@ SB=`which swift-build`
 ST="swift test"
 $SB --fetch
 rm -rf ./Packages/*/Tests
-$SB
 
 if [ "$1" == "test" ]; then
+	shift
+	$SB $@
 	$ST
+else
+	$SB $@
 fi
