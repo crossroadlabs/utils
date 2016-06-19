@@ -98,7 +98,7 @@ def cleanup_ifdefs(in_string):
     index = match.end()
     if_str = match.group(1)
     if_str = swift_re.sub('swift("\1")', if_str)
-    if_str = if_str.replace("!", "not ").replace("||", "or").replace("&&", "and")
+    if_str = if_str.replace("!", " not ").replace("||", " or ").replace("&&", " and ")
     result = eval(if_str)
     pos_endif = get_end_index(in_string, match.start()-1, "#if", "#endif")
     pos_else = get_end_index(in_string, match.start()-1, "#if", "#endif", "#else")
