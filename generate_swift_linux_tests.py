@@ -73,7 +73,7 @@ def add_linux_allMethods(in_string, classes):
     res = "\n\n#if os(Linux)\n"
     for cls, methods in classes.iteritems():
         res += "extension "+cls+" {\n" \
-            "\tstatic var allTests : [(String, "+cls+" -> () throws -> Void)] {\n" \
+            "\tstatic var allTests : [(String, ("+cls+") -> () throws -> Void)] {\n" \
             "\t\treturn [\n"
         for method in methods:
             res += "\t\t\t(\""+method+"\", "+method+"),\n"
