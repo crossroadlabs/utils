@@ -82,6 +82,7 @@ def add_linux_allMethods(in_string, classes):
 
 def cleanup_ifdefs(in_string):
   if_re = re.compile("#if\s+(.+?)\n")
+  swift_re = re.compile("swift\((.+?)\)")
   Linux = True
   OSX = FreeBSD = iOS = tvOS = watchOS = False
   arm = arm64 = i386 = False
@@ -89,12 +90,16 @@ def cleanup_ifdefs(in_string):
   dispatch = False
   arch = os = lambda o: o
   DEBUG = False
+  swift = lambda v: eval("3.0"+v)
 
   match = if_re.search(in_string)
 
   while match is not None:
     index = match.end()
-    result = eval(match.group(1).replace("!", "not ").replace("||", "or").replace("&&", "and"))
+    if_str = match.group(1)
+    if_str = swift_re.sub('swift("\1")', if_str)
+    if_str = if_str.replace("!", "not ").replace("||", "or").replace("&&", "and")
+    result = eval(if_str)
     pos_endif = get_end_index(in_string, match.start()-1, "#if", "#endif")
     pos_else = get_end_index(in_string, match.start()-1, "#if", "#endif", "#else")
     if result:
