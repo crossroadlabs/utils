@@ -12,7 +12,7 @@ def get_test_files(in_path):
     output = []
     for root, dirs, files in os.walk(in_path):
         for file in files:
-            if file.endswith("swift") and not file.endswith("LinuxMain.swift"):
+            if file.endswith("swift") and not file.endswith("LinuxMain.swift") and not file.endswith("XCTestManifests.swift"):
                 output.append(path.join(root, file))
     return output
 
@@ -129,17 +129,25 @@ def process_test_file(file_path):
     open(file_path, "wt").write(res.encode("utf8"))
     return (path.basename(path.dirname(file_path)), path.basename(file_path), class_list)
 
+def process_test_package(proj_path, package, classes):
+    res = "import XCTest\n\n"
+    res += "#if os(Linux)\n"
+    res += "public func allTests() -> [XCTestCaseEntry] {\n"
+    res += "\t return [\n"
+    for cls in classes:
+        res += "\t\ttestCase("+cls+".allTests),\n"
+    res = res[:-2]    
+    res += "\n\t]\n}\n#endif"
+    open(path.join(path.join(path.join(proj_path, "Tests"), package), "XCTestManifests.swift"), "wt").write(res)
 
 def process_linux_main(proj_path, files_info):
     res = "import XCTest\n\n"
     for pkg in files_info.keys():
-        res += "@testable import "+pkg+"TestSuite\n"
-    res += "\nXCTMain([\n"
-    for pkg in files_info.values():
-        for file, info in pkg:
-            for cls in info:
-                res += "\ttestCase("+cls+".allTests),\n"
-    res += "])"
+        res += "import "+pkg+"\n\n"
+    res += "var tests = [XCTestCaseEntry]()\n\n"
+    for pkg in files_info.keys():
+        res += "tests += "+pkg+".allTests()\n"  
+    res += "\nXCTMain(tests)\n"
     open(path.join(path.join(proj_path, "Tests"), "LinuxMain.swift"), "wt").write(res)
 
 
@@ -155,5 +163,9 @@ if __name__ == "__main__":
         return d
 
     test_names = reduce(red_func, test_names, {})
+    
+    for pkg, info in test_names.items():
+        process_test_package(sys.argv[1], pkg, sum(map(lambda i: i[1], info), []))
+    
     process_linux_main(sys.argv[1], test_names)
     print "OK"
