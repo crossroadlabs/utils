@@ -12,10 +12,14 @@ import termios
 import fcntl
 
 _SWIFT_RELEASES = {
-	"fc261045a5": { "name": "DEV-02-25", "works": True },
-	"24a0c3de75": { "name": "DEV-03-01", "works": True },
-	"3.0-dev": { "name": "DEV_3.0-UNKNOWN", "works": None },
-	"2.2-dev": { "name": "DEV_2.2", "works": False }
+	"fc261045a5": { "name": "DEV-02-25", "works": False },
+	"24a0c3de75": { "name": "DEV-03-01", "works": False },
+	"3.0-dev": { "name": "DEV_3.0-UNKNOWN", "works": False },
+	"2.2-dev": { "name": "DEV_2.2", "works": False },
+    "3.0": { "name": "3.0-RELEASE", "works": False },
+    "3.0.1": { "name": "3.0.1-RELEASE", "works": False },
+    "3.0.2": { "name": "3.0.2-RELEASE", "works": False },
+    "3.1": { "name": "3.1-RELEASE", "works": True }
 }
 
 BINARY_NAME = "swift-express"
@@ -138,9 +142,6 @@ def download_swift_express():
 
 def build_swift_express(swift, folder):
 	swbuild = os.path.join(os.path.dirname(swift), "swift-build")
-	print "Downloading dependencies..."
-	run_command(swbuild, ["--fetch"], cwd=folder)
-	run_command("rm -rf Packages/*/Tests", cwd=folder, shell=True)
 	print "Building..."
 	run_command(swbuild, ["-c", "release"], cwd=folder)
 
