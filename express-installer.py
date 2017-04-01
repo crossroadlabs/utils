@@ -16,10 +16,11 @@ _SWIFT_RELEASES = {
 	"24a0c3de75": { "name": "DEV-03-01", "works": False },
 	"3.0-dev": { "name": "DEV_3.0-UNKNOWN", "works": False },
 	"2.2-dev": { "name": "DEV_2.2", "works": False },
-    "3.0": { "name": "3.0-RELEASE", "works": False },
-    "3.0.1": { "name": "3.0.1-RELEASE", "works": False },
-    "3.0.2": { "name": "3.0.2-RELEASE", "works": False },
-    "3.1": { "name": "3.1-RELEASE", "works": True }
+	"2.2.1-dev": { "name": "DEV_2.2.1", "works": False },
+	"3.0": { "name": "3.0-RELEASE", "works": False },
+	"3.0.1": { "name": "3.0.1-RELEASE", "works": False },
+	"3.0.2": { "name": "3.0.2-RELEASE", "works": False },
+	"3.1": { "name": "3.1-RELEASE", "works": True }
 }
 
 BINARY_NAME = "swift-express"
@@ -61,14 +62,14 @@ def get_swift_release(swift_bin_path):
 		if release is not None:
 			print "Swift release is:", release["name"]
 			return release
-		m = re.search("version\s+([0-9a-z\.\-]+)", result, re.I)
-		if m is not None:
-			release = _SWIFT_RELEASES.get(m.group(1))
-			if release is not None:
-				print "Swift release is: ", release["name"]
-			else:
-				print "Can't detect Swift release"
-			return release
+	m = re.search("version\s+([0-9a-z\.\-]+)", result, re.I)
+	if m is not None:
+		release = _SWIFT_RELEASES.get(m.group(1))
+		if release is not None:
+			print "Swift release is: ", release["name"]
+		else:
+			print "Can't detect Swift release"
+		return release
 	print "Can't detect Swift release"
 	return None
 
